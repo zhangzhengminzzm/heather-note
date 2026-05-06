@@ -200,6 +200,13 @@ textarea {
   gap: 14px;
 }
 
+.dashboard-visual-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(300px, 0.8fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
 .metric-tile,
 .panel {
   background: var(--surface);
@@ -255,6 +262,102 @@ textarea {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fbfcfb;
+}
+
+.body-map-panel {
+  min-width: 0;
+}
+
+.body-map-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 118px;
+  align-items: center;
+  gap: 14px;
+}
+
+.body-map {
+  width: 100%;
+  max-height: 360px;
+}
+
+.body-shape {
+  fill: #e8f2ee;
+  stroke: #187760;
+  stroke-width: 3;
+}
+
+.body-head {
+  fill: #f4efe3;
+}
+
+.body-limb {
+  fill: none;
+  stroke: #187760;
+  stroke-linecap: round;
+  stroke-width: 14;
+}
+
+.body-center-line {
+  fill: none;
+  stroke: #93aaa0;
+  stroke-dasharray: 4 6;
+  stroke-linecap: round;
+  stroke-width: 2;
+}
+
+.body-callout line {
+  stroke: #9a6b08;
+  stroke-linecap: round;
+  stroke-width: 2;
+}
+
+.body-callout circle {
+  fill: #c35a2c;
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.body-callout text {
+  fill: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.body-part-list {
+  display: grid;
+  gap: 10px;
+}
+
+.body-part-list span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.dot.head {
+  background: #d9a94d;
+}
+
+.dot.chest {
+  background: #187760;
+}
+
+.dot.abdomen {
+  background: #c35a2c;
+}
+
+.dot.limb {
+  background: #3a6ea5;
 }
 
 .two-column {
@@ -352,6 +455,12 @@ label {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .table-wrap {
@@ -506,9 +615,14 @@ dialog::backdrop {
   }
 
   .summary-grid,
+  .dashboard-visual-grid,
   .two-column,
   .form-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-visual-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -526,10 +640,15 @@ dialog::backdrop {
   }
 
   .summary-grid,
+  .dashboard-visual-grid,
   .two-column,
   .form-grid,
   .form-grid.compact,
   .nav-list {
+    grid-template-columns: 1fr;
+  }
+
+  .body-map-content {
     grid-template-columns: 1fr;
   }
 

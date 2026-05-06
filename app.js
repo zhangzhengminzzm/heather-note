@@ -506,13 +506,14 @@ function bindEvents() {
   });
 
   $("#openMemberDialog").addEventListener("click", () => $("#memberDialog").showModal());
+  $("#closeMemberDialog").addEventListener("click", () => $("#memberDialog").close());
 
   $("#memberForm").addEventListener("submit", async (event) => {
     if (event.submitter?.value === "cancel") return;
     event.preventDefault();
     const form = event.currentTarget;
     const data = Object.fromEntries(new FormData(form));
-    await saveRecord("members", {
+    const member = {
       id: createId("member"),
       name: data.name.trim(),
       relation: data.relation.trim(),
@@ -520,9 +521,15 @@ function bindEvents() {
       gender: data.gender,
       notes: data.notes.trim(),
       createdAt: new Date().toISOString(),
-    });
+    };
+    await saveRecord("members", member);
+    state.activeMemberId = member.id;
+    localStorage.setItem("family-health-active-member", member.id);
     form.reset();
-    await refresh("成员已添加");
+    if (event.submitter?.dataset.closeAfter === "true") {
+      $("#memberDialog").close();
+    }
+    await refresh(event.submitter?.dataset.closeAfter === "true" ? "成员已添加，已退出成员管理" : "成员已添加");
   });
 
   $("#vitalForm").addEventListener("submit", async (event) => {

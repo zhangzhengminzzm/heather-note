@@ -63,14 +63,67 @@
             </div>
           </div>
 
-          <div class="panel chart-panel">
-            <div class="panel-heading">
-              <div>
-                <h3>近期指标趋势</h3>
-                <p>按当前成员显示最近 20 条血糖、收缩压、舒张压记录。</p>
+          <div class="dashboard-visual-grid">
+            <div class="panel chart-panel">
+              <div class="panel-heading">
+                <div>
+                  <h3>近期指标趋势</h3>
+                  <p>按当前成员显示最近 20 条血糖、收缩压、舒张压记录。</p>
+                </div>
               </div>
+              <canvas id="vitalsChart" width="960" height="360" aria-label="健康指标趋势图"></canvas>
             </div>
-            <canvas id="vitalsChart" width="960" height="360" aria-label="健康指标趋势图"></canvas>
+
+            <section class="panel body-map-panel">
+              <div class="panel-heading">
+                <div>
+                  <h3>人体部位示意</h3>
+                  <p>用于快速定位日常症状、检查资料或图片记录涉及的身体区域。</p>
+                </div>
+              </div>
+              <div class="body-map-content">
+                <svg class="body-map" viewBox="0 0 260 360" role="img" aria-label="人体部位示意图">
+                  <circle class="body-shape body-head" cx="130" cy="45" r="28" />
+                  <path class="body-shape" d="M105 82 Q130 70 155 82 L170 180 Q150 196 130 196 Q110 196 90 180 Z" />
+                  <path class="body-limb" d="M96 96 C68 120 58 156 54 205" />
+                  <path class="body-limb" d="M164 96 C192 120 202 156 206 205" />
+                  <path class="body-limb" d="M112 194 C100 240 96 286 94 335" />
+                  <path class="body-limb" d="M148 194 C160 240 164 286 166 335" />
+                  <path class="body-center-line" d="M130 78 L130 195" />
+                  <g class="body-callout">
+                    <line x1="130" y1="45" x2="205" y2="34" />
+                    <circle cx="130" cy="45" r="5" />
+                    <text x="210" y="38">头颈</text>
+                  </g>
+                  <g class="body-callout">
+                    <line x1="130" y1="118" x2="206" y2="112" />
+                    <circle cx="130" cy="118" r="5" />
+                    <text x="210" y="116">胸部</text>
+                  </g>
+                  <g class="body-callout">
+                    <line x1="130" y1="166" x2="206" y2="170" />
+                    <circle cx="130" cy="166" r="5" />
+                    <text x="210" y="174">腹部</text>
+                  </g>
+                  <g class="body-callout">
+                    <line x1="62" y1="160" x2="18" y2="150" />
+                    <circle cx="62" cy="160" r="5" />
+                    <text x="14" y="154">上肢</text>
+                  </g>
+                  <g class="body-callout">
+                    <line x1="150" y1="260" x2="205" y2="260" />
+                    <circle cx="150" cy="260" r="5" />
+                    <text x="210" y="264">下肢</text>
+                  </g>
+                </svg>
+                <div class="body-part-list" aria-label="人体部位列表">
+                  <span><i class="dot head"></i>头颈</span>
+                  <span><i class="dot chest"></i>胸部</span>
+                  <span><i class="dot abdomen"></i>腹部</span>
+                  <span><i class="dot limb"></i>上肢/下肢</span>
+                </div>
+              </div>
+            </section>
           </div>
 
           <div class="two-column">
@@ -302,7 +355,11 @@
             过敏史/基础病
             <textarea name="notes" rows="3"></textarea>
           </label>
-          <button class="primary-button" type="submit">添加成员</button>
+          <div class="dialog-actions wide">
+            <button class="primary-button" type="submit">添加成员</button>
+            <button class="ghost-button" type="submit" data-close-after="true">添加并退出</button>
+            <button class="ghost-button" id="closeMemberDialog" type="button">退出</button>
+          </div>
         </div>
         <div id="memberList" class="member-list"></div>
       </form>
