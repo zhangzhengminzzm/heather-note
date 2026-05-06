@@ -48,11 +48,7 @@ button {
   align-items: center;
   min-height: 100vh;
   padding: clamp(28px, 5vw, 76px);
-  background:
-    linear-gradient(90deg, rgba(245, 247, 246, 0.96), rgba(245, 247, 246, 0.76)),
-    url("https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1800&q=80");
-  background-position: center;
-  background-size: cover;
+  background: var(--bg);
   gap: 42px;
 }
 
@@ -221,6 +217,8 @@ button {
 }
 
 .sidebar-link {
+  display: grid;
+  place-items: center;
   min-height: 36px;
   margin-top: 6px;
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -228,6 +226,8 @@ button {
   background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
   font-weight: 700;
+  padding: 0 10px;
+  text-decoration: none;
 }
 
 .main {

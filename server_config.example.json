@@ -1,0 +1,7 @@
+{
+  "access_keys": [
+    "请替换成你自己的强密钥"
+  ],
+  "max_active_sessions": 3,
+  "session_ttl_minutes": 480
+}
