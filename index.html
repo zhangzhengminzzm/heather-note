@@ -7,7 +7,36 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div class="app-shell">
+    <section class="entry-page" id="entryPage">
+      <div class="entry-copy">
+        <p class="eyebrow">Family Health Records</p>
+        <h1>家庭健康信息管理系统</h1>
+        <p>多人可通过网页访问系统入口，个人健康数据保存在各自浏览器本地。</p>
+        <div class="entry-actions">
+          <button class="primary-button" id="enterSystem" type="button">进入系统</button>
+          <a class="ghost-link" href="https://zhangzhengminzzm.github.io/heather-note/">公网入口</a>
+        </div>
+      </div>
+      <div class="entry-visual" aria-hidden="true">
+        <div class="entry-card">
+          <span>血糖</span>
+          <strong>5.6</strong>
+          <small>mmol/L</small>
+        </div>
+        <div class="entry-card accent">
+          <span>血压</span>
+          <strong>120/80</strong>
+          <small>mmHg</small>
+        </div>
+        <div class="entry-card wide">
+          <span>本地资料</span>
+          <strong>IndexedDB</strong>
+          <small>报告、图片、用药历史</small>
+        </div>
+      </div>
+    </section>
+
+    <div class="app-shell is-hidden" id="appShell">
       <aside class="sidebar">
         <div class="brand">
           <div class="brand-mark">H</div>
@@ -27,6 +56,7 @@
         <div class="storage-note">
           <strong>本地存储</strong>
           <span>所有数据保存在当前浏览器 IndexedDB 中。</span>
+          <button class="sidebar-link" id="backToEntry" type="button">返回入口</button>
         </div>
       </aside>
 
@@ -231,45 +261,57 @@
         </section>
 
         <section class="view" id="medicinesView">
-          <form class="panel form-grid" id="medicineForm">
-            <div class="form-header">
-              <h3>添加个人药品服用历史</h3>
+          <section class="panel medicine-add-panel">
+            <div class="panel-heading">
+              <div>
+                <h3>服药历史</h3>
+                <p>每次新增一项用药记录，保存后会加入下方列表。</p>
+              </div>
+              <button class="primary-button" id="showMedicineForm" type="button">新增一项</button>
             </div>
-            <label>
-              药品名称
-              <input type="text" name="name" required placeholder="例如 二甲双胍" />
-            </label>
-            <label>
-              剂量
-              <input type="text" name="dosage" placeholder="例如 0.5g" />
-            </label>
-            <label>
-              频次
-              <input type="text" name="frequency" placeholder="例如 每日两次" />
-            </label>
-            <label>
-              开始日期
-              <input type="date" name="startDate" required />
-            </label>
-            <label>
-              结束日期
-              <input type="date" name="endDate" />
-            </label>
-            <label>
-              用药状态
-              <select name="status">
-                <option value="正在服用">正在服用</option>
-                <option value="已停用">已停用</option>
-                <option value="临时用药">临时用药</option>
-              </select>
-            </label>
-            <label class="wide">
-              备注
-              <textarea name="notes" rows="3" placeholder="疗效、不良反应、医嘱来源等"></textarea>
-            </label>
-            <button class="primary-button" type="submit">保存用药</button>
-          </form>
-          <section class="panel item-grid" id="medicineList"></section>
+            <form class="form-grid medicine-entry-form is-hidden" id="medicineForm">
+              <div class="form-header">
+                <h3>新增一项服药记录</h3>
+              </div>
+              <label>
+                药品名称
+                <input type="text" name="name" required placeholder="例如 二甲双胍" />
+              </label>
+              <label>
+                剂量
+                <input type="text" name="dosage" placeholder="例如 0.5g" />
+              </label>
+              <label>
+                频次
+                <input type="text" name="frequency" placeholder="例如 每日两次" />
+              </label>
+              <label>
+                开始日期
+                <input type="date" name="startDate" required />
+              </label>
+              <label>
+                结束日期
+                <input type="date" name="endDate" />
+              </label>
+              <label>
+                用药状态
+                <select name="status">
+                  <option value="正在服用">正在服用</option>
+                  <option value="已停用">已停用</option>
+                  <option value="临时用药">临时用药</option>
+                </select>
+              </label>
+              <label class="wide">
+                备注
+                <textarea name="notes" rows="3" placeholder="疗效、不良反应、医嘱来源等"></textarea>
+              </label>
+              <div class="dialog-actions wide">
+                <button class="primary-button" type="submit">保存这一项</button>
+                <button class="ghost-button" id="cancelMedicineForm" type="button">取消</button>
+              </div>
+            </form>
+          </section>
+          <section class="medicine-list" id="medicineList"></section>
         </section>
 
         <section class="view" id="imagesView">

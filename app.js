@@ -230,12 +230,18 @@ function renderReports() {
 function renderMedicines() {
   const html = memberScoped(state.medicines)
     .map(
-      (medicine) => `
-        <article class="item-card">
-          <h4>${escapeHtml(medicine.name)}</h4>
-          <span>${escapeHtml(medicine.status)} · ${formatDate(medicine.startDate)} 至 ${medicine.endDate ? formatDate(medicine.endDate) : "今"}</span>
-          <p>${escapeHtml([medicine.dosage, medicine.frequency].filter(Boolean).join("，") || "未填写剂量频次")}</p>
-          <p>${escapeHtml(medicine.notes || "")}</p>
+      (medicine, index) => `
+        <article class="medicine-entry-card">
+          <div class="medicine-index">${String(index + 1).padStart(2, "0")}</div>
+          <div>
+            <h4>${escapeHtml(medicine.name)}</h4>
+            <div class="medicine-meta">
+              <span>${escapeHtml(medicine.status)}</span>
+              <span>${formatDate(medicine.startDate)} 至 ${medicine.endDate ? formatDate(medicine.endDate) : "今"}</span>
+              <span>${escapeHtml([medicine.dosage, medicine.frequency].filter(Boolean).join("，") || "未填写剂量频次")}</span>
+            </div>
+            <p>${escapeHtml(medicine.notes || "暂无备注")}</p>
+          </div>
           <button class="danger-button" data-delete="medicines" data-id="${medicine.id}" type="button">删除</button>
         </article>
       `,
@@ -487,7 +493,25 @@ function generateMarkdown() {
   ].join("\n");
 }
 
+function showApp() {
+  $("#entryPage").classList.add("is-hidden");
+  $("#appShell").classList.remove("is-hidden");
+  window.location.hash = "app";
+  drawVitalsChart(memberScoped(state.vitals).slice(0, 20).reverse());
+}
+
+function showEntry() {
+  $("#appShell").classList.add("is-hidden");
+  $("#entryPage").classList.remove("is-hidden");
+  if (window.location.hash === "#app") {
+    history.replaceState(null, "", window.location.pathname + window.location.search);
+  }
+}
+
 function bindEvents() {
+  $("#enterSystem").addEventListener("click", showApp);
+  $("#backToEntry").addEventListener("click", showEntry);
+
   $$(".nav-item").forEach((button) => {
     button.addEventListener("click", () => {
       $$(".nav-item").forEach((item) => item.classList.remove("active"));
@@ -507,6 +531,16 @@ function bindEvents() {
 
   $("#openMemberDialog").addEventListener("click", () => $("#memberDialog").showModal());
   $("#closeMemberDialog").addEventListener("click", () => $("#memberDialog").close());
+  $("#showMedicineForm").addEventListener("click", () => {
+    $("#medicineForm").classList.remove("is-hidden");
+    $("#showMedicineForm").classList.add("is-hidden");
+    $("#medicineForm").querySelector('[name="name"]').focus();
+  });
+  $("#cancelMedicineForm").addEventListener("click", () => {
+    $("#medicineForm").reset();
+    $("#medicineForm").classList.add("is-hidden");
+    $("#showMedicineForm").classList.remove("is-hidden");
+  });
 
   $("#memberForm").addEventListener("submit", async (event) => {
     if (event.submitter?.value === "cancel") return;
@@ -585,6 +619,8 @@ function bindEvents() {
       createdAt: new Date().toISOString(),
     });
     event.currentTarget.reset();
+    $("#medicineForm").classList.add("is-hidden");
+    $("#showMedicineForm").classList.remove("is-hidden");
     await refresh("用药记录已保存");
   });
 
@@ -687,6 +723,9 @@ async function init() {
   bindEvents();
   $("#vitalForm").recordedAt.value = todayInputValue();
   renderAll();
+  if (window.location.hash === "#app") {
+    showApp();
+  }
 }
 
 init().catch((error) => {

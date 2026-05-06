@@ -38,6 +38,101 @@ button {
   cursor: pointer;
 }
 
+.is-hidden {
+  display: none !important;
+}
+
+.entry-page {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.9fr) minmax(320px, 1.1fr);
+  align-items: center;
+  min-height: 100vh;
+  padding: clamp(28px, 5vw, 76px);
+  background:
+    linear-gradient(90deg, rgba(245, 247, 246, 0.96), rgba(245, 247, 246, 0.76)),
+    url("https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1800&q=80");
+  background-position: center;
+  background-size: cover;
+  gap: 42px;
+}
+
+.entry-copy {
+  max-width: 620px;
+}
+
+.entry-copy h1 {
+  margin: 8px 0 14px;
+  font-size: clamp(36px, 6vw, 64px);
+  line-height: 1.05;
+}
+
+.entry-copy p:not(.eyebrow) {
+  margin: 0;
+  max-width: 520px;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.entry-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.ghost-link {
+  display: inline-grid;
+  min-height: 42px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.84);
+  color: var(--text);
+  font-weight: 700;
+  padding: 0 14px;
+  text-decoration: none;
+}
+
+.entry-visual {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  justify-self: stretch;
+}
+
+.entry-card {
+  display: grid;
+  gap: 8px;
+  min-height: 170px;
+  align-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow);
+  padding: 22px;
+}
+
+.entry-card.wide {
+  grid-column: 1 / -1;
+}
+
+.entry-card span,
+.entry-card small {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.entry-card strong {
+  color: var(--primary);
+  font-size: clamp(32px, 5vw, 52px);
+}
+
+.entry-card.accent strong {
+  color: var(--accent);
+}
+
 .app-shell {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
@@ -123,6 +218,16 @@ button {
   color: #d5e1dc;
   font-size: 13px;
   line-height: 1.5;
+}
+
+.sidebar-link {
+  min-height: 36px;
+  margin-top: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-weight: 700;
 }
 
 .main {
@@ -493,6 +598,72 @@ th {
   gap: 14px;
 }
 
+.medicine-add-panel .panel-heading {
+  margin-bottom: 0;
+}
+
+.medicine-entry-form {
+  margin-top: 16px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.medicine-list {
+  display: grid;
+  gap: 12px;
+}
+
+.medicine-entry-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.medicine-index {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--primary);
+  font-weight: 800;
+}
+
+.medicine-entry-card h4 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+
+.medicine-entry-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.medicine-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.medicine-meta span {
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 8px;
+}
+
 .item-card,
 .image-card {
   display: grid;
@@ -597,6 +768,10 @@ dialog::backdrop {
 }
 
 @media (max-width: 980px) {
+  .entry-page {
+    grid-template-columns: 1fr;
+  }
+
   .app-shell {
     grid-template-columns: 1fr;
   }
@@ -627,6 +802,14 @@ dialog::backdrop {
 }
 
 @media (max-width: 680px) {
+  .entry-page {
+    padding: 22px;
+  }
+
+  .entry-visual {
+    grid-template-columns: 1fr;
+  }
+
   .main,
   .sidebar {
     padding: 18px;
@@ -649,6 +832,10 @@ dialog::backdrop {
   }
 
   .body-map-content {
+    grid-template-columns: 1fr;
+  }
+
+  .medicine-entry-card {
     grid-template-columns: 1fr;
   }
 
