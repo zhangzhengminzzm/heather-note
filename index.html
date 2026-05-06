@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>家庭健康信息管理系统</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">H</div>
+          <div>
+            <h1>家庭健康</h1>
+            <p>本地信息管理</p>
+          </div>
+        </div>
+        <nav class="nav-list" aria-label="主导航">
+          <button class="nav-item active" data-view="dashboard">总览</button>
+          <button class="nav-item" data-view="vitals">血糖血压</button>
+          <button class="nav-item" data-view="reports">体检报告</button>
+          <button class="nav-item" data-view="medicines">服药历史</button>
+          <button class="nav-item" data-view="images">图片资料</button>
+          <button class="nav-item" data-view="export">导出 Markdown</button>
+        </nav>
+        <div class="storage-note">
+          <strong>本地存储</strong>
+          <span>所有数据保存在当前浏览器 IndexedDB 中。</span>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Family Health Records</p>
+            <h2 id="viewTitle">总览</h2>
+          </div>
+          <div class="member-picker">
+            <label for="activeMember">当前成员</label>
+            <select id="activeMember"></select>
+            <button class="ghost-button" id="openMemberDialog" type="button">管理成员</button>
+          </div>
+        </header>
+
+        <section class="view active" id="dashboardView">
+          <div class="summary-grid">
+            <div class="metric-tile">
+              <span>成员数</span>
+              <strong id="memberCount">0</strong>
+            </div>
+            <div class="metric-tile">
+              <span>血糖血压记录</span>
+              <strong id="vitalCount">0</strong>
+            </div>
+            <div class="metric-tile">
+              <span>体检报告</span>
+              <strong id="reportCount">0</strong>
+            </div>
+            <div class="metric-tile">
+              <span>服药记录</span>
+              <strong id="medicineCount">0</strong>
+            </div>
+          </div>
+
+          <div class="panel chart-panel">
+            <div class="panel-heading">
+              <div>
+                <h3>近期指标趋势</h3>
+                <p>按当前成员显示最近 20 条血糖、收缩压、舒张压记录。</p>
+              </div>
+            </div>
+            <canvas id="vitalsChart" width="960" height="360" aria-label="健康指标趋势图"></canvas>
+          </div>
+
+          <div class="two-column">
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>最近记录</h3>
+              </div>
+              <div id="recentVitals" class="compact-list"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>资料概况</h3>
+              </div>
+              <div id="profileSnapshot" class="profile-snapshot"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="vitalsView">
+          <form class="panel form-grid" id="vitalForm">
+            <div class="form-header">
+              <h3>添加血糖血压记录</h3>
+              <p>血糖单位 mmol/L，血压单位 mmHg。</p>
+            </div>
+            <label>
+              记录时间
+              <input type="datetime-local" name="recordedAt" required />
+            </label>
+            <label>
+              血糖
+              <input type="number" name="bloodSugar" min="0" max="40" step="0.1" placeholder="例如 5.6" />
+            </label>
+            <label>
+              收缩压
+              <input type="number" name="systolic" min="40" max="260" step="1" placeholder="例如 120" />
+            </label>
+            <label>
+              舒张压
+              <input type="number" name="diastolic" min="30" max="180" step="1" placeholder="例如 80" />
+            </label>
+            <label>
+              场景
+              <select name="context">
+                <option value="空腹">空腹</option>
+                <option value="餐后">餐后</option>
+                <option value="睡前">睡前</option>
+                <option value="运动后">运动后</option>
+                <option value="其他">其他</option>
+              </select>
+            </label>
+            <label class="wide">
+              备注
+              <textarea name="notes" rows="3" placeholder="饮食、运动、身体感受等"></textarea>
+            </label>
+            <button class="primary-button" type="submit">保存记录</button>
+          </form>
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>历史记录</h3>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>时间</th>
+                    <th>血糖</th>
+                    <th>收缩压</th>
+                    <th>舒张压</th>
+                    <th>场景</th>
+                    <th>备注</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="vitalsTable"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" id="reportsView">
+          <form class="panel form-grid" id="reportForm">
+            <div class="form-header">
+              <h3>保存体检报告</h3>
+              <p>可记录报告摘要，也可保存 PDF、图片等文件。</p>
+            </div>
+            <label>
+              报告名称
+              <input type="text" name="title" required placeholder="例如 年度体检报告" />
+            </label>
+            <label>
+              检查日期
+              <input type="date" name="examDate" required />
+            </label>
+            <label class="wide">
+              摘要
+              <textarea name="summary" rows="4" placeholder="关键异常、医生建议、复查安排"></textarea>
+            </label>
+            <label class="wide">
+              报告文件
+              <input type="file" name="file" accept=".pdf,image/*,.doc,.docx,.txt" />
+            </label>
+            <button class="primary-button" type="submit">保存报告</button>
+          </form>
+          <section class="panel item-grid" id="reportsList"></section>
+        </section>
+
+        <section class="view" id="medicinesView">
+          <form class="panel form-grid" id="medicineForm">
+            <div class="form-header">
+              <h3>添加个人药品服用历史</h3>
+            </div>
+            <label>
+              药品名称
+              <input type="text" name="name" required placeholder="例如 二甲双胍" />
+            </label>
+            <label>
+              剂量
+              <input type="text" name="dosage" placeholder="例如 0.5g" />
+            </label>
+            <label>
+              频次
+              <input type="text" name="frequency" placeholder="例如 每日两次" />
+            </label>
+            <label>
+              开始日期
+              <input type="date" name="startDate" required />
+            </label>
+            <label>
+              结束日期
+              <input type="date" name="endDate" />
+            </label>
+            <label>
+              用药状态
+              <select name="status">
+                <option value="正在服用">正在服用</option>
+                <option value="已停用">已停用</option>
+                <option value="临时用药">临时用药</option>
+              </select>
+            </label>
+            <label class="wide">
+              备注
+              <textarea name="notes" rows="3" placeholder="疗效、不良反应、医嘱来源等"></textarea>
+            </label>
+            <button class="primary-button" type="submit">保存用药</button>
+          </form>
+          <section class="panel item-grid" id="medicineList"></section>
+        </section>
+
+        <section class="view" id="imagesView">
+          <form class="panel form-grid" id="imageForm">
+            <div class="form-header">
+              <h3>上传图片信息</h3>
+              <p>适合保存处方、检查单、药盒、伤口/皮肤状态等图片。</p>
+            </div>
+            <label>
+              图片标题
+              <input type="text" name="title" required placeholder="例如 降压药药盒" />
+            </label>
+            <label>
+              分类
+              <select name="category">
+                <option value="处方">处方</option>
+                <option value="检查单">检查单</option>
+                <option value="药品">药品</option>
+                <option value="症状照片">症状照片</option>
+                <option value="其他">其他</option>
+              </select>
+            </label>
+            <label class="wide">
+              图片文件
+              <input type="file" name="file" accept="image/*" required />
+            </label>
+            <label class="wide">
+              说明
+              <textarea name="notes" rows="3"></textarea>
+            </label>
+            <button class="primary-button" type="submit">保存图片</button>
+          </form>
+          <section class="image-grid" id="imageList"></section>
+        </section>
+
+        <section class="view" id="exportView">
+          <section class="panel export-panel">
+            <div class="panel-heading">
+              <div>
+                <h3>导出给医生查看的 Markdown</h3>
+                <p>生成当前成员的个人信息、指标趋势、体检报告、用药历史和图片索引，可提交给 ChatGPT 整理成医生判断材料。</p>
+              </div>
+              <div class="button-row">
+                <button class="ghost-button" id="copyMarkdown" type="button">复制</button>
+                <button class="primary-button" id="downloadMarkdown" type="button">下载 .md</button>
+              </div>
+            </div>
+            <textarea id="markdownOutput" spellcheck="false"></textarea>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="memberDialog">
+      <form method="dialog" class="dialog-card" id="memberForm">
+        <div class="dialog-heading">
+          <h3>家庭成员</h3>
+          <button class="icon-button" value="cancel" type="submit" aria-label="关闭">×</button>
+        </div>
+        <div class="form-grid compact">
+          <label>
+            姓名
+            <input type="text" name="name" required />
+          </label>
+          <label>
+            关系
+            <input type="text" name="relation" placeholder="本人、父亲、母亲等" />
+          </label>
+          <label>
+            出生日期
+            <input type="date" name="birthDate" />
+          </label>
+          <label>
+            性别
+            <select name="gender">
+              <option value="">未填写</option>
+              <option value="女">女</option>
+              <option value="男">男</option>
+              <option value="其他">其他</option>
+            </select>
+          </label>
+          <label class="wide">
+            过敏史/基础病
+            <textarea name="notes" rows="3"></textarea>
+          </label>
+          <button class="primary-button" type="submit">添加成员</button>
+        </div>
+        <div id="memberList" class="member-list"></div>
+      </form>
+    </dialog>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>
