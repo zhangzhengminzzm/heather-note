@@ -6,6 +6,7 @@ const state = {
   db: null,
   members: [],
   activeMemberId: "",
+  editingMemberId: "",
   vitals: [],
   reports: [],
   medicines: [],
@@ -184,6 +185,7 @@ function renderDashboard() {
       <div class="list-row"><strong>性别</strong><span>${escapeHtml(member.gender || "-")}</span></div>
       <div class="list-row"><strong>图片资料</strong><span>${images.length} 项</span></div>
       <div class="list-row"><strong>过敏史/基础病</strong><span>${escapeHtml(member.notes || "-")}</span></div>
+      <button class="ghost-button" data-edit-member="${member.id}" type="button">修改个人基础信息</button>
     `
     : `<div class="empty-state">暂无成员</div>`;
 
@@ -194,7 +196,7 @@ function renderVitals() {
   const rows = memberScoped(state.vitals)
     .map(
       (record) => `
-        <tr>
+        <tr class="${record.justSaved ? "fresh-row" : ""}">
           <td>${formatDateTime(record.recordedAt)}</td>
           <td>${valueOrDash(record.bloodSugar)}</td>
           <td>${valueOrDash(record.systolic)}</td>
@@ -276,7 +278,10 @@ function renderMembers() {
             <strong>${escapeHtml(member.name)}</strong>
             <span>${escapeHtml(member.relation || "未填写关系")} · ${escapeHtml(member.gender || "未填写性别")}</span>
           </div>
-          <button class="danger-button" data-delete-member="${member.id}" type="button">删除</button>
+          <div class="button-row">
+            <button class="ghost-button" data-edit-member="${member.id}" type="button">编辑</button>
+            <button class="danger-button" data-delete-member="${member.id}" type="button">删除</button>
+          </div>
         </div>
       `,
     )
@@ -309,6 +314,34 @@ function renderVitalRowCard(record) {
       <span>血糖 ${valueOrDash(record.bloodSugar)} · 血压 ${valueOrDash(record.systolic)}/${valueOrDash(record.diastolic)}</span>
     </div>
   `;
+}
+
+function renderVitalRelatedViews() {
+  renderDashboard();
+  renderVitals();
+  renderMarkdown();
+}
+
+function setMemberFormMode(member = null) {
+  const form = $("#memberForm");
+  state.editingMemberId = member?.id || "";
+  form.querySelector('[name="id"]').value = member?.id || "";
+  form.querySelector('[name="name"]').value = member?.name || "";
+  form.querySelector('[name="relation"]').value = member?.relation || "";
+  form.querySelector('[name="birthDate"]').value = member?.birthDate || "";
+  form.querySelector('[name="gender"]').value = member?.gender || "";
+  form.querySelector('[name="notes"]').value = member?.notes || "";
+
+  const isEditing = Boolean(member);
+  $("#memberDialogTitle").textContent = isEditing ? "修改成员信息" : "家庭成员";
+  $("#saveMemberButton").textContent = isEditing ? "保存修改" : "添加成员";
+  $("#saveCloseMemberButton").textContent = isEditing ? "保存并退出" : "添加并退出";
+  $("#cancelMemberEdit").classList.toggle("is-hidden", !isEditing);
+}
+
+function resetMemberForm() {
+  $("#memberForm").reset();
+  setMemberFormMode();
 }
 
 function drawVitalsChart(records) {
@@ -529,8 +562,16 @@ function bindEvents() {
     renderAll();
   });
 
-  $("#openMemberDialog").addEventListener("click", () => $("#memberDialog").showModal());
-  $("#closeMemberDialog").addEventListener("click", () => $("#memberDialog").close());
+  $("#openMemberDialog").addEventListener("click", () => {
+    resetMemberForm();
+    $("#memberDialog").showModal();
+  });
+  $("#closeMemberDialog").addEventListener("click", () => {
+    resetMemberForm();
+    $("#memberDialog").close();
+  });
+  $("#memberDialog").addEventListener("close", resetMemberForm);
+  $("#cancelMemberEdit").addEventListener("click", resetMemberForm);
   $("#showMedicineForm").addEventListener("click", () => {
     $("#medicineForm").classList.remove("is-hidden");
     $("#showMedicineForm").classList.add("is-hidden");
@@ -547,29 +588,35 @@ function bindEvents() {
     event.preventDefault();
     const form = event.currentTarget;
     const data = Object.fromEntries(new FormData(form));
+    const existingMember = data.id
+      ? state.members.find((member) => member.id === data.id)
+      : null;
     const member = {
-      id: createId("member"),
+      ...(existingMember || {}),
+      id: data.id || createId("member"),
       name: data.name.trim(),
       relation: data.relation.trim(),
       birthDate: data.birthDate,
       gender: data.gender,
       notes: data.notes.trim(),
-      createdAt: new Date().toISOString(),
+      createdAt: existingMember?.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     await saveRecord("members", member);
     state.activeMemberId = member.id;
     localStorage.setItem("family-health-active-member", member.id);
-    form.reset();
+    resetMemberForm();
     if (event.submitter?.dataset.closeAfter === "true") {
       $("#memberDialog").close();
     }
-    await refresh(event.submitter?.dataset.closeAfter === "true" ? "成员已添加，已退出成员管理" : "成员已添加");
+    const actionText = existingMember ? "成员信息已修改" : "成员已添加";
+    await refresh(event.submitter?.dataset.closeAfter === "true" ? `${actionText}，已退出成员管理` : actionText);
   });
 
   $("#vitalForm").addEventListener("submit", async (event) => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget));
-    await saveRecord("vitals", {
+    const record = {
       id: createId("vital"),
       memberId: state.activeMemberId,
       recordedAt: new Date(data.recordedAt).toISOString(),
@@ -579,10 +626,20 @@ function bindEvents() {
       context: data.context,
       notes: data.notes.trim(),
       createdAt: new Date().toISOString(),
-    });
+    };
+    await saveRecord("vitals", record);
+    state.vitals = [
+      { ...record, justSaved: true },
+      ...state.vitals.map((item) => ({ ...item, justSaved: false })),
+    ].sort((a, b) => b.recordedAt.localeCompare(a.recordedAt));
     event.currentTarget.reset();
     event.currentTarget.recordedAt.value = todayInputValue();
-    await refresh("血糖血压记录已保存");
+    renderVitalRelatedViews();
+    showToast("血糖血压记录已保存");
+    window.setTimeout(() => {
+      state.vitals = state.vitals.map((item) => ({ ...item, justSaved: false }));
+      renderVitals();
+    }, 1600);
   });
 
   $("#reportForm").addEventListener("submit", async (event) => {
@@ -645,6 +702,18 @@ function bindEvents() {
   document.addEventListener("click", async (event) => {
     const deleteButton = event.target.closest("[data-delete]");
     const deleteMemberButton = event.target.closest("[data-delete-member]");
+    const editMemberButton = event.target.closest("[data-edit-member]");
+    if (editMemberButton) {
+      const member = state.members.find((item) => item.id === editMemberButton.dataset.editMember);
+      if (member) {
+        setMemberFormMode(member);
+        if (!$("#memberDialog").open) {
+          $("#memberDialog").showModal();
+        }
+        $("#memberForm").querySelector('[name="name"]').focus();
+      }
+      return;
+    }
     if (deleteButton) {
       await deleteRecord(deleteButton.dataset.delete, deleteButton.dataset.id);
       await refresh("记录已删除");

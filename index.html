@@ -368,10 +368,11 @@
     <dialog id="memberDialog">
       <form method="dialog" class="dialog-card" id="memberForm">
         <div class="dialog-heading">
-          <h3>家庭成员</h3>
+          <h3 id="memberDialogTitle">家庭成员</h3>
           <button class="icon-button" value="cancel" type="submit" aria-label="关闭">×</button>
         </div>
         <div class="form-grid compact">
+          <input type="hidden" name="id" />
           <label>
             姓名
             <input type="text" name="name" required />
@@ -398,8 +399,9 @@
             <textarea name="notes" rows="3"></textarea>
           </label>
           <div class="dialog-actions wide">
-            <button class="primary-button" type="submit">添加成员</button>
-            <button class="ghost-button" type="submit" data-close-after="true">添加并退出</button>
+            <button class="primary-button" id="saveMemberButton" type="submit">添加成员</button>
+            <button class="ghost-button" id="saveCloseMemberButton" type="submit" data-close-after="true">添加并退出</button>
+            <button class="ghost-button is-hidden" id="cancelMemberEdit" type="button">取消编辑</button>
             <button class="ghost-button" id="closeMemberDialog" type="button">退出</button>
           </div>
         </div>

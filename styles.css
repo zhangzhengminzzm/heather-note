@@ -591,6 +591,20 @@ th {
   font-size: 12px;
 }
 
+.fresh-row {
+  animation: fresh-row-highlight 1.6s ease-out;
+}
+
+@keyframes fresh-row-highlight {
+  0% {
+    background: #fff3d6;
+  }
+
+  100% {
+    background: transparent;
+  }
+}
+
 .item-grid,
 .image-grid {
   display: grid;
