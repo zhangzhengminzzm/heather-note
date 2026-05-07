@@ -1,6 +1,10 @@
 const DB_NAME = "family-health-local-db";
 const DB_VERSION = 1;
 const STORE_NAMES = ["members", "vitals", "reports", "medicines", "images"];
+const LIMITS = {
+  vitalsPerMember: 2000,
+  reportsPerMember: 50,
+};
 
 const state = {
   db: null,
@@ -151,6 +155,10 @@ function memberScoped(records) {
   return records.filter((record) => record.memberId === state.activeMemberId);
 }
 
+function hasMemberCapacity(records, limit) {
+  return memberScoped(records).length < limit;
+}
+
 function renderMemberPicker() {
   const picker = $("#activeMember");
   picker.innerHTML = state.members
@@ -168,8 +176,8 @@ function renderDashboard() {
   const images = memberScoped(state.images);
 
   $("#memberCount").textContent = state.members.length;
-  $("#vitalCount").textContent = vitals.length;
-  $("#reportCount").textContent = reports.length;
+  $("#vitalCount").textContent = `${vitals.length}/${LIMITS.vitalsPerMember}`;
+  $("#reportCount").textContent = `${reports.length}/${LIMITS.reportsPerMember}`;
   $("#medicineCount").textContent = medicines.length;
 
   $("#recentVitals").innerHTML =
@@ -183,6 +191,8 @@ function renderDashboard() {
       <div class="list-row"><strong>关系</strong><span>${escapeHtml(member.relation || "-")}</span></div>
       <div class="list-row"><strong>出生日期</strong><span>${member.birthDate ? formatDate(member.birthDate) : "-"}</span></div>
       <div class="list-row"><strong>性别</strong><span>${escapeHtml(member.gender || "-")}</span></div>
+      <div class="list-row"><strong>血糖血压容量</strong><span>${vitals.length}/${LIMITS.vitalsPerMember}</span></div>
+      <div class="list-row"><strong>体检报告容量</strong><span>${reports.length}/${LIMITS.reportsPerMember}</span></div>
       <div class="list-row"><strong>图片资料</strong><span>${images.length} 项</span></div>
       <div class="list-row"><strong>过敏史/基础病</strong><span>${escapeHtml(member.notes || "-")}</span></div>
       <button class="ghost-button" data-edit-member="${member.id}" type="button">修改个人基础信息</button>
@@ -615,6 +625,10 @@ function bindEvents() {
 
   $("#vitalForm").addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (!hasMemberCapacity(state.vitals, LIMITS.vitalsPerMember)) {
+      showToast(`当前成员血糖血压记录已达到 ${LIMITS.vitalsPerMember} 条上限，请先删除旧记录。`);
+      return;
+    }
     const data = Object.fromEntries(new FormData(event.currentTarget));
     const record = {
       id: createId("vital"),
@@ -644,20 +658,29 @@ function bindEvents() {
 
   $("#reportForm").addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (!hasMemberCapacity(state.reports, LIMITS.reportsPerMember)) {
+      showToast(`当前成员体检报告已达到 ${LIMITS.reportsPerMember} 份上限，请先删除旧报告。`);
+      return;
+    }
     const form = event.currentTarget;
     const data = Object.fromEntries(new FormData(form));
-    const file = await fileToDataUrl(form.file.files[0]);
-    await saveRecord("reports", {
-      id: createId("report"),
-      memberId: state.activeMemberId,
-      title: data.title.trim(),
-      examDate: data.examDate,
-      summary: data.summary.trim(),
-      file,
-      createdAt: new Date().toISOString(),
-    });
-    form.reset();
-    await refresh("体检报告已保存");
+    try {
+      const file = await fileToDataUrl(form.file.files[0]);
+      await saveRecord("reports", {
+        id: createId("report"),
+        memberId: state.activeMemberId,
+        title: data.title.trim(),
+        examDate: data.examDate,
+        summary: data.summary.trim(),
+        file,
+        createdAt: new Date().toISOString(),
+      });
+      form.reset();
+      await refresh("体检报告已保存");
+    } catch (error) {
+      console.error(error);
+      showToast("体检报告保存失败，可能是附件过大或浏览器本地空间不足。");
+    }
   });
 
   $("#medicineForm").addEventListener("submit", async (event) => {
